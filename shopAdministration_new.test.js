@@ -1,21 +1,21 @@
 const {
-  UserRepository,
+  UserRepositoryFacade,
   FileManager,
   Logger,
-  User,
 } = require("./shopAdministration_new");
 
 describe("Check shop administration functionality", () => {
-  let userRepository;
+  let logger = new Logger();
+  let fileManager = new FileManager();
+  let userRepositoryFacade = new UserRepositoryFacade(logger, fileManager);
+  let testNumber = 0;
 
   const testCases = [
     {
       function: () => {
-        const userAlice = new User("Alice", 30);
-        userRepository.addUser(userAlice);
-        const userBob = new User("Bob", 25);
-        userRepository.addUser(userBob);
-        return userRepository.printUsers();
+        userRepositoryFacade.addUser("Alice", 30);
+        userRepositoryFacade.addUser("Bob", 25);
+        return userRepositoryFacade.printUsers();
       },
       inString: "Test 'adding users'",
       expected: "Alice (30 years old)\nBob (25 years old)",
@@ -23,9 +23,9 @@ describe("Check shop administration functionality", () => {
     {
       function: () => {
         const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
-        userRepository.loadUsers(data);
-        userRepository.removeUser("Alice");
-        return userRepository.printUsers();
+        userRepositoryFacade.loadUsers(data);
+        userRepositoryFacade.removeUser("Alice");
+        return userRepositoryFacade.printUsers();
       },
       inString: "Test 'loading and removing users'",
       expected: "Bob (25 years old)",
@@ -33,8 +33,8 @@ describe("Check shop administration functionality", () => {
     {
       function: () => {
         const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
-        userRepository.loadUsers(data);
-        return userRepository.clearHistory();
+        userRepositoryFacade.loadUsers(data);
+        return userRepositoryFacade.clearHistory();
       },
       inString: "Test 'clearing log'",
       expected: true,
@@ -42,18 +42,30 @@ describe("Check shop administration functionality", () => {
     {
       function: () => {
         const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
-        userRepository.loadUsers(data);
-        return userRepository.showHistory().split("\n").length;
+        userRepositoryFacade.loadUsers(data);
+        return userRepositoryFacade.showHistory().split("\n").length;
       },
       inString: "Test 'check log info'",
-      expected: 3,
+      expected: 4,
+    },
+    {
+      function: () => {
+        logger = new Logger();
+        fileManager = new FileManager();
+        userRepositoryFacade = new UserRepositoryFacade(logger, fileManager);
+        return userRepositoryFacade.showHistory().split("\n").length;
+      },
+      inString: "Test 'check reinitialization of subsystems'",
+      expected: 4,
     },
   ];
 
   beforeEach(() => {
-    const logger = new Logger();
-    const fileManager = new FileManager();
-    userRepository = new UserRepository(logger, fileManager);
+    testNumber += 1;
+    if (testNumber != 5) {
+      userRepositoryFacade.clearRepository();
+      userRepositoryFacade.clearHistory();
+    }
   });
 
   testCases.forEach((test) => {

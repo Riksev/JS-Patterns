@@ -1,25 +1,33 @@
 "use strict";
 
-/* SOLID::
- * SRP: single responsibility principle (only one reason to change)
- * OCP: open-closed principle (possible expand without modifying)
- * LSP: Liskov substitution principle (interchangable classes)
- * ISP: interface segregation principle (without useless dependencies)
- * DIP: dependency inversion principle (only abstract dependency)
+/* Used patterns:::
+ * Creational::
+ * Singleton: (ensures that only one object of its kind exists)
+ * Structural::
+ * Facade: (provides a simple interface to the complex logic of one or several subsystems)
+ * Behavioral::
+ * ?:
  */
 
 class ILogger {
   log(message) {}
   printLog() {}
+  getLog() {}
   clearLog() {}
 }
 
 class Logger extends ILogger {
   #logMessages;
 
+  static instance;
+
   constructor() {
     super();
+    if (Logger.instance) {
+      return Logger.instance;
+    }
     this.#logMessages = new Array();
+    Logger.instance = this;
   }
 
   log(message) {
@@ -50,6 +58,16 @@ class IFileManager {
 }
 
 class FileManager extends IFileManager {
+  static instance = new FileManager();
+
+  constructor() {
+    super();
+    if (FileManager.instance) {
+      return FileManager.instance;
+    }
+    FileManager.instance = this;
+  }
+
   save(data) {
     console.log("Saving to file: \n" + data); // Simulate file saving
   }
@@ -91,11 +109,17 @@ class UserRepository extends IRepository {
   #fileManager;
   #users;
 
+  static instance;
+
   constructor(logger, fileManager) {
     super();
+    if (UserRepository.instance) {
+      return UserRepository.instance;
+    }
     this.#logger = logger;
     this.#fileManager = fileManager;
     this.#users = new Array();
+    UserRepository.instance = this;
   }
 
   addUser(user) {
@@ -129,6 +153,12 @@ class UserRepository extends IRepository {
     this.#fileManager.save(fileData);
   }
 
+  clearRepository() {
+    this.#users = new Array();
+    this.#logger.log("Repository was cleared");
+    return true;
+  }
+
   loadUsers(data) {
     const content = this.#fileManager.load(data);
     let lines = content.split("\n");
@@ -153,9 +183,51 @@ class UserRepository extends IRepository {
   }
 }
 
+class UserRepositoryFacade {
+  #userRepository;
+
+  static instance;
+
+  constructor(logger, fileManager) {
+    if (UserRepositoryFacade.instance) {
+      return UserRepositoryFacade.instance;
+    }
+    this.#userRepository = new UserRepository(logger, fileManager);
+    UserRepositoryFacade.instance = this;
+  }
+
+  addUser(name, age) {
+    const user = new User(name, age);
+    this.#userRepository.addUser(user);
+  }
+
+  removeUser(name) {
+    this.#userRepository.removeUser(name);
+  }
+
+  printUsers() {
+    return this.#userRepository.printUsers();
+  }
+
+  clearRepository() {
+    return this.#userRepository.clearRepository();
+  }
+
+  loadUsers(data) {
+    this.#userRepository.loadUsers(data);
+  }
+
+  showHistory() {
+    return this.#userRepository.showHistory();
+  }
+
+  clearHistory() {
+    return this.#userRepository.clearHistory();
+  }
+}
+
 module.exports = {
-  UserRepository,
+  UserRepositoryFacade,
   FileManager,
   Logger,
-  User,
 };
