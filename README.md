@@ -2,8 +2,8 @@
 Hello! Let me quickly introduce you into the project. First of all, this is demonstration of applying different patterns on the shop administration OOP example.
 Used patterns:
 - Creational: Singleton
-- Structural: ?
-- Behavioral: ?
+- Structural: Facade
+- Behavioral: Observer
 
 # Content
 We have a single file here.
