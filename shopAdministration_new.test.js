@@ -58,6 +58,20 @@ describe("Check shop administration functionality", () => {
       inString: "Test 'check reinitialization of subsystems'",
       expected: 4,
     },
+    {
+      function: () => {
+        logger = new Logger();
+        fileManager = new FileManager();
+        fileManager.attach(logger);
+        userRepositoryFacade = new UserRepositoryFacade(logger, fileManager);
+        const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
+        userRepositoryFacade.loadUsers(data);
+        fileManager.detach(logger);
+        return userRepositoryFacade.showHistory().split("\n").length;
+      },
+      inString: "Test 'check observers work'",
+      expected: 7,
+    },
   ];
 
   beforeEach(() => {

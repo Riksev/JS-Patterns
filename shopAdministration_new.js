@@ -6,7 +6,7 @@
  * Structural::
  * Facade: (provides a simple interface to the complex logic of one or several subsystems)
  * Behavioral::
- * ?:
+ * Observer: (provides a way to react to events happening in other objects without coupling to their classes)
  */
 
 class ILogger {
@@ -50,6 +50,10 @@ class Logger extends ILogger {
     this.log("Log cleared");
     return true;
   }
+
+  update(message) {
+    this.log(message);
+  }
 }
 
 class IFileManager {
@@ -58,6 +62,8 @@ class IFileManager {
 }
 
 class FileManager extends IFileManager {
+  #observers;
+
   static instance = new FileManager();
 
   constructor() {
@@ -65,15 +71,44 @@ class FileManager extends IFileManager {
     if (FileManager.instance) {
       return FileManager.instance;
     }
+    this.#observers = new Array();
     FileManager.instance = this;
   }
 
   save(data) {
     console.log("Saving to file: \n" + data); // Simulate file saving
+    this.#notify("Users data is saved into file");
   }
 
   load(data) {
+    this.#notify("Users data is prepared for reading");
     return data; // Simulate loading from a file
+  }
+
+  attach(observer) {
+    if (!this.#observers.includes(observer)) {
+      this.#observers.push(observer);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  detach(observer) {
+    if (this.#observers.includes(observer)) {
+      this.#observers = this.#observers.filter((element) => {
+        return element != observer;
+      });
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  #notify(message) {
+    this.#observers.forEach((element) => {
+      element.update(message);
+    });
   }
 }
 
