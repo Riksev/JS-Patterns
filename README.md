@@ -9,7 +9,8 @@ Used patterns:
 We have a single file here.
 We have a few files here.
 For testing:
-- shopAdministration.test.js
+- shopAdministration_old.test.js
+- shopAdministration_new.test.js
 For NPM:
 - package.json
 For demonstration:
