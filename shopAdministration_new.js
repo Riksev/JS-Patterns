@@ -134,8 +134,9 @@ class User {
 }
 
 class IRepository {
-  clearRepository() {}
   loadFrom(data) {}
+  printData() {}
+  clearRepository() {}
 }
 
 class UserRepository extends IRepository {
@@ -168,7 +169,7 @@ class UserRepository extends IRepository {
     this.#saveUsers();
   }
 
-  printUsers() {
+  printData() {
     const usersInfo = new Array();
     this.#users.forEach((user) => {
       console.log(user.getInfo());
@@ -230,7 +231,7 @@ class UserRepositoryFacade {
   }
 
   printUsers() {
-    return this.#userRepository.printUsers();
+    return this.#userRepository.printData();
   }
 
   clearRepository() {

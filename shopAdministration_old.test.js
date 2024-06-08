@@ -1,42 +1,51 @@
-const { UserManager } = require("./shopAdministration_old");
+const {
+  UserRepository,
+  FileManager,
+  Logger,
+  User,
+} = require("./shopAdministration_old");
 
 describe("Check shop administration functionality", () => {
-  let userManager;
+  let userRepository;
+  let logger;
+  let fileManager;
 
   const testCases = [
     {
       function: () => {
-        userManager.addUser("Alice", 30);
-        userManager.addUser("Bob", 25);
-        return userManager.printUsers();
+        const userAlice = new User("Alice", 30);
+        userRepository.addUser(userAlice);
+        const userBob = new User("Bob", 25);
+        userRepository.addUser(userBob);
+        return userRepository.printData();
       },
       inString: "Test 'adding users'",
       expected: "Alice (30 years old)\nBob (25 years old)",
     },
     {
       function: () => {
-        const fileData = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
-        userManager.fileManager.loadUsersFromFile(fileData, userManager);
-        userManager.removeUser("Alice");
-        return userManager.printUsers();
+        const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
+        userRepository.loadFrom(data);
+        userRepository.removeUser("Alice");
+        return userRepository.printData();
       },
       inString: "Test 'loading and removing users'",
       expected: "Bob (25 years old)",
     },
     {
       function: () => {
-        const fileData = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
-        userManager.fileManager.loadUsersFromFile(fileData, userManager);
-        return userManager.logger.clearLog();
+        const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
+        userRepository.loadFrom(data);
+        return logger.clearLog();
       },
       inString: "Test 'clearing log'",
       expected: true,
     },
     {
       function: () => {
-        const fileData = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
-        userManager.fileManager.loadUsersFromFile(fileData, userManager);
-        return userManager.logger.printLog().split("\n").length;
+        const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
+        userRepository.loadFrom(data);
+        return logger.getLog().split("\n").length;
       },
       inString: "Test 'check log info'",
       expected: 3,
@@ -44,7 +53,9 @@ describe("Check shop administration functionality", () => {
   ];
 
   beforeEach(() => {
-    userManager = new UserManager();
+    logger = new Logger();
+    fileManager = new FileManager();
+    userRepository = new UserRepository(logger, fileManager);
   });
 
   testCases.forEach((test) => {

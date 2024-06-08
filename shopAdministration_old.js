@@ -2,107 +2,151 @@
 
 /* SOLID::
  * SRP: single responsibility principle (only one reason to change)
- * OCP: open-closed principle
- * LSP: Liskov substitution principle
- * ISP: interface segregation principle
- * DIP: dependency inversion principle
+ * OCP: open-closed principle (possible expand without modifying)
+ * LSP: Liskov substitution principle (interchangable classes)
+ * ISP: interface segregation principle (without useless dependencies)
+ * DIP: dependency inversion principle (only abstract dependency)
  */
 
-class UserManager {
-  constructor() {
-    this.users = [];
-    this.logger = new Logger();
-    this.fileManager = new FileManager();
-  }
-
-  addUser(name, age) {
-    let user = new User(name, age);
-    this.users.push(user);
-    this.logger.log("User added: " + name);
-    this.fileManager.saveUsersToFile(this.users);
-  }
-
-  removeUser(name) {
-    this.users = this.users.filter((user) => user.name !== name);
-    this.logger.log("User removed: " + name);
-    this.fileManager.saveUsersToFile(this.users);
-  }
-
-  printUsers() {
-    const users = new Array();
-    this.users.forEach((user) => {
-      console.log(user.getInfo());
-      users.push(user.getInfo());
-    });
-    this.logger.log("Printed user list");
-    return users.join("\n");
-  }
+class ILogger {
+  log(message) {}
+  getLog() {}
+  clearLog() {}
 }
 
-class User {
-  constructor(name, age) {
-    this.name = name;
-    this.age = age;
-    this.logger = new Logger();
-  }
+class Logger extends ILogger {
+  #logMessages;
 
-  getInfo() {
-    this.logger.log("Getting info for user: " + this.name);
-    return this.name + " (" + this.age + " years old)";
-  }
-}
-
-class Logger {
   constructor() {
-    this.logMessages = [];
+    super();
+    this.#logMessages = new Array();
   }
 
   log(message) {
-    let timestamp = new Date().toISOString();
-    let logMessage = timestamp + " - " + message;
-    this.logMessages.push(logMessage);
+    const timestamp = new Date().toISOString();
+    const logMessage = timestamp + " - " + message;
+    this.#logMessages.push(logMessage);
     console.log(logMessage);
   }
 
-  printLog() {
-    const startMessage = "Log messages:";
+  getLog() {
     const messages = new Array(["Log messages:"]);
-    console.log(startMessage);
-    this.logMessages.forEach((msg) => {
-      console.log(msg);
-      messages.push(msg);
+    this.#logMessages.forEach((message) => {
+      messages.push(message);
     });
     return messages.join("\n");
   }
 
   clearLog() {
-    this.logMessages = [];
+    this.#logMessages = new Array();
     this.log("Log cleared");
     return true;
   }
 }
 
-class FileManager {
-  saveUsersToFile(users) {
-    let fileData = "Users: \n";
-    users.forEach((user) => {
-      fileData += user.getInfo() + "\n";
-    });
-    console.log("Saving to file: \n" + fileData); // Simulate file saving
+class IFileManager {
+  save(data) {}
+  load(data) {}
+}
+
+class FileManager extends IFileManager {
+  save(data) {
+    console.log("Saving to file: \n" + data); // Simulate file saving
+    return true;
   }
 
-  loadUsersFromFile(data, userManager) {
-    let lines = data.split("\n");
+  load(data) {
+    return data; // Simulate loading from a file
+  }
+}
+
+class User {
+  #name;
+  #age;
+
+  constructor(name, age) {
+    this.#name = name;
+    this.#age = age;
+  }
+
+  getName() {
+    return this.#name;
+  }
+
+  getAge() {
+    return this.#age;
+  }
+
+  getInfo() {
+    return this.getName() + " (" + this.getAge() + " years old)";
+  }
+}
+
+class IRepository {
+  loadFrom(data) {}
+  printData() {}
+}
+
+class UserRepository extends IRepository {
+  #logger;
+  #fileManager;
+  #users;
+
+  constructor(logger, fileManager) {
+    super();
+    this.#logger = logger;
+    this.#fileManager = fileManager;
+    this.#users = new Array();
+  }
+
+  addUser(user) {
+    this.#users.push(user);
+    this.#logger.log("User added: " + user.getName());
+    this.#saveUsers();
+  }
+
+  removeUser(name) {
+    this.#users = this.#users.filter((user) => user.getName() !== name);
+    this.#logger.log("User removed: " + name);
+    this.#saveUsers();
+  }
+
+  printData() {
+    const usersInfo = new Array();
+    this.#users.forEach((user) => {
+      console.log(user.getInfo());
+      this.#logger.log("Getting info for user: " + user.getName());
+      usersInfo.push(user.getInfo());
+    });
+    this.#logger.log("Printed user list");
+    return usersInfo.join("\n");
+  }
+
+  #saveUsers() {
+    let fileData = "Users: \n";
+    this.#users.forEach((user) => {
+      fileData += user.getInfo() + "\n";
+    });
+    this.#fileManager.save(fileData);
+  }
+
+  loadFrom(data) {
+    const content = this.#fileManager.load(data);
+    let lines = content.split("\n");
     lines.forEach((line) => {
       if (line.startsWith("Users:")) return;
-      let [name, age] = line.replace(" years old", "").split(" (");
+      const [name, age] = line.replace(" years old", "").split(" (");
       if (name && age) {
-        userManager.addUser(name, parseInt(age));
+        const user = new User(name, parseInt(age));
+        this.addUser(user);
       }
     });
   }
 }
 
 module.exports = {
-  UserManager,
+  UserRepository,
+  FileManager,
+  Logger,
+  User,
 };
