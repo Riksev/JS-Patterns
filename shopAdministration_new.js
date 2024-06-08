@@ -11,7 +11,6 @@
 
 class ILogger {
   log(message) {}
-  printLog() {}
   getLog() {}
   clearLog() {}
 }
@@ -31,8 +30,8 @@ class Logger extends ILogger {
   }
 
   log(message) {
-    let timestamp = new Date().toISOString();
-    let logMessage = timestamp + " - " + message;
+    const timestamp = new Date().toISOString();
+    const logMessage = timestamp + " - " + message;
     this.#logMessages.push(logMessage);
     console.log(logMessage);
   }
@@ -58,7 +57,7 @@ class Logger extends ILogger {
 
 class IFileManager {
   save(data) {}
-  load(data, userManager) {}
+  load(data) {}
 }
 
 class FileManager extends IFileManager {
@@ -77,11 +76,11 @@ class FileManager extends IFileManager {
 
   save(data) {
     console.log("Saving to file: \n" + data); // Simulate file saving
-    this.#notify("Users data is saved into file");
+    this.#notify("Data is saved into file");
   }
 
   load(data) {
-    this.#notify("Users data is prepared for reading");
+    this.#notify("Data is prepared for reading");
     return data; // Simulate loading from a file
   }
 
@@ -135,8 +134,8 @@ class User {
 }
 
 class IRepository {
-  showHistory() {}
-  clearHistory() {}
+  clearRepository() {}
+  loadFrom(data) {}
 }
 
 class UserRepository extends IRepository {
@@ -194,9 +193,9 @@ class UserRepository extends IRepository {
     return true;
   }
 
-  loadUsers(data) {
+  loadFrom(data) {
     const content = this.#fileManager.load(data);
-    let lines = content.split("\n");
+    const lines = content.split("\n");
     lines.forEach((line) => {
       if (line.startsWith("Users:")) return;
       const [name, age] = line.replace(" years old", "").split(" (");
@@ -205,16 +204,6 @@ class UserRepository extends IRepository {
         this.addUser(user);
       }
     });
-  }
-
-  showHistory() {
-    const history = this.#logger.getLog();
-    console.log(this.#logger.getLog());
-    return history;
-  }
-
-  clearHistory() {
-    return this.#logger.clearLog();
   }
 }
 
@@ -249,15 +238,7 @@ class UserRepositoryFacade {
   }
 
   loadUsers(data) {
-    this.#userRepository.loadUsers(data);
-  }
-
-  showHistory() {
-    return this.#userRepository.showHistory();
-  }
-
-  clearHistory() {
-    return this.#userRepository.clearHistory();
+    this.#userRepository.loadFrom(data);
   }
 }
 

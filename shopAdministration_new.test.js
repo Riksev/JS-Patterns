@@ -34,7 +34,7 @@ describe("Check shop administration functionality", () => {
       function: () => {
         const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
         userRepositoryFacade.loadUsers(data);
-        return userRepositoryFacade.clearHistory();
+        return logger.clearLog();
       },
       inString: "Test 'clearing log'",
       expected: true,
@@ -43,7 +43,7 @@ describe("Check shop administration functionality", () => {
       function: () => {
         const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
         userRepositoryFacade.loadUsers(data);
-        return userRepositoryFacade.showHistory().split("\n").length;
+        return logger.getLog().split("\n").length;
       },
       inString: "Test 'check log info'",
       expected: 4,
@@ -53,7 +53,7 @@ describe("Check shop administration functionality", () => {
         logger = new Logger();
         fileManager = new FileManager();
         userRepositoryFacade = new UserRepositoryFacade(logger, fileManager);
-        return userRepositoryFacade.showHistory().split("\n").length;
+        return logger.getLog().split("\n").length;
       },
       inString: "Test 'check reinitialization of subsystems'",
       expected: 4,
@@ -67,7 +67,7 @@ describe("Check shop administration functionality", () => {
         const data = "Users: \nAlice (30 years old)\nBob (25 years old)\n";
         userRepositoryFacade.loadUsers(data);
         fileManager.detach(logger);
-        return userRepositoryFacade.showHistory().split("\n").length;
+        return logger.getLog().split("\n").length;
       },
       inString: "Test 'check observers work'",
       expected: 7,
@@ -78,7 +78,7 @@ describe("Check shop administration functionality", () => {
     testNumber += 1;
     if (testNumber != 5) {
       userRepositoryFacade.clearRepository();
-      userRepositoryFacade.clearHistory();
+      logger.clearLog();
     }
   });
 
