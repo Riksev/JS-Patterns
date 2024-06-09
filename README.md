@@ -6,7 +6,6 @@ Used patterns:
 - Behavioral: Observer
 
 # Content
-We have a single file here.
 We have a few files here.
 For testing:
 - shopAdministration_old.test.js
